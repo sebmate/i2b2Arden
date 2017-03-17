@@ -1,0 +1,41 @@
+maintenance:
+	title: Hello World Example;;
+	mlmname: hello_world;;
+	arden: version 2.1;;  
+	version: 1.0;;
+	institution: Lehrstuhl fuer Medizinische Informatik, Friedrich-Alexander-Universtitaet Erlangen-Nuernberg;;
+	author: Sebastian Mate;;
+	specialist: Sebastian Mate;;
+	date: 2016-04-08;;
+	validation: testing;;
+
+library:
+	purpose: Test for i2b2Arden;;
+	explanation: n.a.;;
+	keywords: hello world ;;
+
+knowledge:
+	type: data-driven
+;;
+
+data:
+	stdout_dest := destination{STDOUT};
+;;
+
+evoke:
+;;
+
+logic:
+	conclude true;
+;;
+      
+action:
+	// ---- Begin of your code ----
+
+	write "Hello World!"  at stdout_dest;  
+
+	// ---- End of your code ----
+;;
+
+end:
+

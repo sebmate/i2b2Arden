@@ -1,0 +1,46 @@
+maintenance:
+	title: Arden MLM for i2b2 query #QUERY#;;
+	mlmname: i2b2_MLM ;;
+	arden: version 2.1 ;;  
+	version: 1.0 ;;
+	institution: Lehrstuhl fuer Medizinische Informatik, Friedrich-Alexander-Universitaet Erlangen-Nuernberg ;;
+	author: i2b2 to Arden ;;
+	specialist: i2b2 to Arden ;;
+	date: #DATE# ;;
+	validation: testing ;;
+
+library:
+	purpose: Arden MLM for i2b2;;
+	explanation: n.a.;;
+	keywords: i2b2 ;;
+
+knowledge:
+	type: data-driven;;
+
+	data:
+	
+		stdout_dest := destination{STDOUT};
+		DataStruc := object [case, values];
+
+	//DATA    
+	;;
+	
+	evoke:
+	//EVOKE    
+	;;
+
+	logic:
+	//LOGIC    
+	;;
+
+	action:
+		// ---- Begin of your code ----
+		
+	//ACTION
+
+		// ---- End of your code ----
+	;;
+
+end:
+
+  

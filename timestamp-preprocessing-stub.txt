@@ -1,0 +1,44 @@
+		
+		// Creating proper ARDEN timestamps for #INVAR# in variable #OUTVAR#:
+		
+		#OUTVAR# := ();
+			
+		for CurrentPatient in Patients do
+
+			CurrentPatientData := #INVAR# where they.patient_num is equal CurrentPatient;
+			Values := CurrentPatientData.value;
+			StartTimes := CurrentPatientData.start_date;
+			CurrentPatientDataRemodeled := ();
+
+			for i in 1 seqto count Values do
+			
+				TempValue := Values[i] as number;
+				TimeString := StartTimes[i]; 
+
+				// Based on code from the ARDEN implementation guide
+				year_str   := SUBSTRING 4 CHARACTERS FROM TimeString; 
+				month_str  := SUBSTRING 2 CHARACTERS STARTING AT 6 FROM TimeString; 
+				day_str    := SUBSTRING 2 CHARACTERS STARTING AT 9 FROM TimeString; 
+				hour_str   := SUBSTRING 2 CHARACTERS STARTING AT 12 FROM TimeString; 
+				minute_str := SUBSTRING 2 CHARACTERS STARTING AT 15 FROM TimeString; 
+				second_str := SUBSTRING 2 CHARACTERS STARTING AT 18 FROM TimeString;
+				StartDate  := 1800-01-01T00:00:00;  
+				TimeStamp := StartDate + (year_str as number) years - 1800 years; 
+				TimeStamp := TimeStamp + (month_str as number) months - 1 month; 
+				TimeStamp := TimeStamp + (day_str as number) days - 1 day; 
+				TimeStamp := TimeStamp + (hour_str as number) hours; 
+				TimeStamp := TimeStamp + (minute_str as number) minutes; 
+				TimeStamp := TimeStamp + (second_str as number) seconds;
+
+				time of TempValue := TimeStamp; 
+				CurrentPatientDataRemodeled := CurrentPatientDataRemodeled, TempValue;
+				
+			enddo;
+			
+			TemporaryData := new DataStruc;
+			TemporaryData.case := CurrentPatient;
+			TemporaryData.Values := CurrentPatientDataRemodeled;
+			#OUTVAR# := #OUTVAR#, TemporaryData;
+			
+		enddo;
+		

@@ -1,0 +1,212 @@
+maintenance:
+	title: Arden MLM for i2b2 query "Sodiu-Age-Male@12:57:01";;
+	mlmname: i2b2_MLM ;;
+	arden: version 2.1 ;;  
+	version: 1.0 ;;
+	institution: Lehrstuhl fuer Medizinische Informatik, Friedrich-Alexander-Universitaet Erlangen-Nuernberg ;;
+	author: i2b2 to Arden ;;
+	specialist: i2b2 to Arden ;;
+	date: 2016-01-01 ;;
+	validation: testing ;;
+
+library:
+	purpose: Arden MLM for i2b2;;
+	explanation: n.a.;;
+	keywords: i2b2 ;;
+
+knowledge:
+	type: data-driven;;
+
+	data:
+	
+		ResultsWindow := destination{STDOUT};
+		
+
+	
+		// Create a new Arden data structure, which will hold the i2b2 data later:
+
+		DataStruct := object [ID, Sodium, Age, Male];
+		PatientData := new DataStruct;
+
+		// Fetch all patients from the i2b2 query:
+		Patients := read {SELECT PSC.PATIENT_NUM PATIENT_NUM FROM QT_QUERY_MASTER QM, QT_QUERY_INSTANCE QI, QT_QUERY_RESULT_INSTANCE QRI, QT_PATIENT_SET_COLLECTION PSC WHERE QM.QUERY_MASTER_ID = QI.QUERY_MASTER_ID AND QI.QUERY_INSTANCE_ID = QRI.QUERY_INSTANCE_ID AND QRI.RESULT_INSTANCE_ID = PSC.RESULT_INSTANCE_ID AND QM.NAME = 'Sodiu-Age-Male@12:57:01'};
+
+		i2b2 := object [PATIENT_NUM, VALUE, START_DATE, END_DATE];
+
+		// Panel 0
+
+		Sodium_ORIG := read as i2b2 {SELECT PATIENT_NUM, (CASE WHEN NVAL_NUM IS NOT NULL THEN NVAL_NUM ELSE 0 END) VALUE, START_DATE, END_DATE FROM OBSERVATION_FACT WHERE CONCEPT_CD IN (SELECT CONCEPT_CD FROM CONCEPT_DIMENSION WHERE CONCEPT_PATH LIKE '\i2b2\Sodium\%') AND PATIENT_NUM IN (SELECT PSC.PATIENT_NUM PATIENT_NUM FROM QT_QUERY_MASTER QM, QT_QUERY_INSTANCE QI, QT_QUERY_RESULT_INSTANCE QRI, QT_PATIENT_SET_COLLECTION PSC WHERE QM.QUERY_MASTER_ID = QI.QUERY_MASTER_ID AND QI.QUERY_INSTANCE_ID = QRI.QUERY_INSTANCE_ID AND QRI.RESULT_INSTANCE_ID = PSC.RESULT_INSTANCE_ID AND QM.NAME = 'Sodiu-Age-Male@12:57:01')};
+
+		// Panel 1
+
+		Age_ORIG := read as i2b2 {SELECT PATIENT_NUM, (CASE WHEN NVAL_NUM IS NOT NULL THEN NVAL_NUM ELSE 0 END) VALUE, START_DATE, END_DATE FROM OBSERVATION_FACT WHERE CONCEPT_CD IN (SELECT CONCEPT_CD FROM CONCEPT_DIMENSION WHERE CONCEPT_PATH LIKE '\i2b2\Age\%') AND PATIENT_NUM IN (SELECT PSC.PATIENT_NUM PATIENT_NUM FROM QT_QUERY_MASTER QM, QT_QUERY_INSTANCE QI, QT_QUERY_RESULT_INSTANCE QRI, QT_PATIENT_SET_COLLECTION PSC WHERE QM.QUERY_MASTER_ID = QI.QUERY_MASTER_ID AND QI.QUERY_INSTANCE_ID = QRI.QUERY_INSTANCE_ID AND QRI.RESULT_INSTANCE_ID = PSC.RESULT_INSTANCE_ID AND QM.NAME = 'Sodiu-Age-Male@12:57:01')};
+
+		// Panel 2
+
+		Male_ORIG := read as i2b2 {SELECT PATIENT_NUM, (CASE WHEN NVAL_NUM IS NOT NULL THEN NVAL_NUM ELSE 0 END) VALUE, START_DATE, END_DATE FROM OBSERVATION_FACT WHERE CONCEPT_CD IN (SELECT CONCEPT_CD FROM CONCEPT_DIMENSION WHERE CONCEPT_PATH LIKE '\i2b2\Male\%') AND PATIENT_NUM IN (SELECT PSC.PATIENT_NUM PATIENT_NUM FROM QT_QUERY_MASTER QM, QT_QUERY_INSTANCE QI, QT_QUERY_RESULT_INSTANCE QRI, QT_PATIENT_SET_COLLECTION PSC WHERE QM.QUERY_MASTER_ID = QI.QUERY_MASTER_ID AND QI.QUERY_INSTANCE_ID = QRI.QUERY_INSTANCE_ID AND QRI.RESULT_INSTANCE_ID = PSC.RESULT_INSTANCE_ID AND QM.NAME = 'Sodiu-Age-Male@12:57:01')};
+
+        //Generate the PatientData object by aligning time stamps to values:
+
+        for CurrentPatient in Patients do
+			
+			// Process 'Sodium' data:
+
+			currentPatientData := Sodium_ORIG where they.patient_num is equal CurrentPatient;
+			Values := CurrentPatientData.value;
+			StartTimes := CurrentPatientData.start_date;
+			CurrentPatientDataRemodeled := ();
+
+			for i in 1 seqto count Values do
+
+				TempValue := Values[i] as number;
+				TimeString := StartTimes[i]; 
+
+				// Based on code from the ARDEN implementation guide
+				year_str   := SUBSTRING 4 CHARACTERS FROM TimeString; 
+				month_str  := SUBSTRING 2 CHARACTERS STARTING AT 6 FROM TimeString; 
+				day_str    := SUBSTRING 2 CHARACTERS STARTING AT 9 FROM TimeString; 
+				hour_str   := SUBSTRING 2 CHARACTERS STARTING AT 12 FROM TimeString; 
+				minute_str := SUBSTRING 2 CHARACTERS STARTING AT 15 FROM TimeString; 
+				second_str := SUBSTRING 2 CHARACTERS STARTING AT 18 FROM TimeString;
+				StartDate  := 1800-01-01T00:00:00;  
+				TimeStamp := StartDate + (year_str as number) years - 1800 years; 
+				TimeStamp := TimeStamp + (month_str as number) months - 1 month; 
+				TimeStamp := TimeStamp + (day_str as number) days - 1 day; 
+				TimeStamp := TimeStamp + (hour_str as number) hours; 
+				TimeStamp := TimeStamp + (minute_str as number) minutes; 
+				TimeStamp := TimeStamp + (second_str as number) seconds;
+
+				time of TempValue := TimeStamp; 
+				CurrentPatientDataRemodeled := CurrentPatientDataRemodeled, TempValue;
+
+			enddo;
+
+			Sodium := CurrentPatientDataRemodeled;
+			
+			// Process 'Age' data:
+
+			currentPatientData := Age_ORIG where they.patient_num is equal CurrentPatient;
+			Values := CurrentPatientData.value;
+			StartTimes := CurrentPatientData.start_date;
+			CurrentPatientDataRemodeled := ();
+
+			for i in 1 seqto count Values do
+
+				TempValue := Values[i] as number;
+				TimeString := StartTimes[i]; 
+
+				// Based on code from the ARDEN implementation guide
+				year_str   := SUBSTRING 4 CHARACTERS FROM TimeString; 
+				month_str  := SUBSTRING 2 CHARACTERS STARTING AT 6 FROM TimeString; 
+				day_str    := SUBSTRING 2 CHARACTERS STARTING AT 9 FROM TimeString; 
+				hour_str   := SUBSTRING 2 CHARACTERS STARTING AT 12 FROM TimeString; 
+				minute_str := SUBSTRING 2 CHARACTERS STARTING AT 15 FROM TimeString; 
+				second_str := SUBSTRING 2 CHARACTERS STARTING AT 18 FROM TimeString;
+				StartDate  := 1800-01-01T00:00:00;  
+				TimeStamp := StartDate + (year_str as number) years - 1800 years; 
+				TimeStamp := TimeStamp + (month_str as number) months - 1 month; 
+				TimeStamp := TimeStamp + (day_str as number) days - 1 day; 
+				TimeStamp := TimeStamp + (hour_str as number) hours; 
+				TimeStamp := TimeStamp + (minute_str as number) minutes; 
+				TimeStamp := TimeStamp + (second_str as number) seconds;
+
+				time of TempValue := TimeStamp; 
+				CurrentPatientDataRemodeled := CurrentPatientDataRemodeled, TempValue;
+
+			enddo;
+
+			Age := CurrentPatientDataRemodeled;
+			
+			// Process 'Male' data:
+
+			currentPatientData := Male_ORIG where they.patient_num is equal CurrentPatient;
+			Values := CurrentPatientData.value;
+			StartTimes := CurrentPatientData.start_date;
+			CurrentPatientDataRemodeled := ();
+
+			for i in 1 seqto count Values do
+
+				TempValue := Values[i] as number;
+				TimeString := StartTimes[i]; 
+
+				// Based on code from the ARDEN implementation guide
+				year_str   := SUBSTRING 4 CHARACTERS FROM TimeString; 
+				month_str  := SUBSTRING 2 CHARACTERS STARTING AT 6 FROM TimeString; 
+				day_str    := SUBSTRING 2 CHARACTERS STARTING AT 9 FROM TimeString; 
+				hour_str   := SUBSTRING 2 CHARACTERS STARTING AT 12 FROM TimeString; 
+				minute_str := SUBSTRING 2 CHARACTERS STARTING AT 15 FROM TimeString; 
+				second_str := SUBSTRING 2 CHARACTERS STARTING AT 18 FROM TimeString;
+				StartDate  := 1800-01-01T00:00:00;  
+				TimeStamp := StartDate + (year_str as number) years - 1800 years; 
+				TimeStamp := TimeStamp + (month_str as number) months - 1 month; 
+				TimeStamp := TimeStamp + (day_str as number) days - 1 day; 
+				TimeStamp := TimeStamp + (hour_str as number) hours; 
+				TimeStamp := TimeStamp + (minute_str as number) minutes; 
+				TimeStamp := TimeStamp + (second_str as number) seconds;
+
+				time of TempValue := TimeStamp; 
+				CurrentPatientDataRemodeled := CurrentPatientDataRemodeled, TempValue;
+
+			enddo;
+
+			Male := CurrentPatientDataRemodeled;
+
+			// Finally, add the data elements for the current patient to the PatientData object:
+
+			CurrentPatientData := new DataStruct;
+			CurrentPatientData.ID := CurrentPatient;
+			CurrentPatientData.Sodium := Sodium;
+			CurrentPatientData.Age := Age;
+			CurrentPatientData.Male := Male;
+			PatientData := PatientData, CurrentPatientData;
+
+                enddo;    
+	;;
+	
+	evoke:
+	//EVOKE    
+	;;
+
+	logic:
+	        conclude true;    
+	;;
+
+	action:
+		// ---- Begin of your code ----
+		
+	// Available data structures: Patients, PatientData.ID, PatientData.Sodium, PatientData.Age, PatientData.Male
+
+	   counter := 0;
+   	
+	   // Iterate over all patients in the PatientData object:
+      for pat in PatientData do
+			
+			// Compute start and end times, as well as duration and mean time of the sodium measurements:
+			sodium_start    := time of earliest of pat.Sodium;
+			sodium_end      := time of latest of pat.Sodium;
+			sodium_duration := sodium_end - sodium_start;
+			sodium_mean     := sodium_start + sodium_duration / 2;
+			
+			// Collect measurements for the two time intervals:
+			sodium_phase_1  := pat.Sodium where they occurred before sodium_mean;
+			sodium_phase_2  := pat.Sodium where they occurred after sodium_mean;
+			
+			// Compute the average sodium values for each interval:
+			average_phase_1 := average of sodium_phase_1;
+			average_phase_2 := average of sodium_phase_2;
+			
+			// Apply criteria to include or exclude the patient:
+			if sodium_duration >= 2 weeks and average_phase_1 > average_phase_2 then
+				write (pat.ID, sodium_duration, average_phase_1, average_phase_2) 
+					formatted with "Patient: %d, %d, %.1f > %.1f" at ResultsWindow;		
+				counter := counter + 1; // Count the patient
+			endif;		
+      enddo;
+
+	  write "Found patients: " || counter at ResultsWindow;// ---- End of your code ----
+	;;
+
+end:
+
+  
+
